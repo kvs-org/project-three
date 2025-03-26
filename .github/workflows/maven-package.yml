@@ -19,23 +19,13 @@ jobs:
           token: ${{ secrets.WORKFLOW_PAT }}
           fetch-depth: 0
 
+      # Set executable permissions for scripts
+      - name: Set executable permissions
+        run: chmod +x scripts/*.sh
+
       # Check for new commits
       - name: Check for new commits
-        run: |
-          if [ -f multiplication/commit-hash.txt ]; then
-            PREVIOUS_COMMIT=$(cat multiplication/commit-hash.txt)
-            CURRENT_COMMIT=${{ github.sha }}
-            echo "Last Commit: $PREVIOUS_COMMIT"
-            echo "Current Commit: $CURRENT_COMMIT"
-            if [ "$PREVIOUS_COMMIT" = "$CURRENT_COMMIT" ]; then
-              echo "No new commits detected. Skipping build."
-              exit 0
-            else
-              echo "New commits detected. Proceeding with build."
-            fi
-          else
-            echo "No previous commit hash found. Proceeding with build."
-          fi
+        run: ./scripts/check-commits.sh
 
       # Set up JDK
       - name: Set up JDK 17
@@ -66,28 +56,12 @@ jobs:
 
       # Store commit hash in a file
       - name: Save Commit Hash
-        run: echo "${{ github.sha }}" > multiplication/commit-hash.txt
+        run: ./scripts/save-commit-hash.sh
 
       # Create a new branch for the commit
       - name: Create Branch
-        run: |
-          git checkout -b update-commit-hash
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add multiplication/commit-hash.txt
-          git commit -m "Update commit-hash.txt with latest commit hash"
-          git push origin update-commit-hash
+        run: ./scripts/create-branch.sh
 
       # Create a pull request using the GitHub REST API
       - name: Create Pull Request
-        run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.WORKFLOW_PAT }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }}/pulls \
-            -d '{
-              "title": "Update commit-hash.txt",
-              "body": "This pull request updates the commit-hash.txt file with the latest commit hash.",
-              "head": "update-commit-hash",
-              "base": "main"
-            }'
+        run: ./scripts/create-pull-request.sh
