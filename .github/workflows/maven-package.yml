@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'subtraction/commit-hash.txt' # Ignore pushes that only modify this file
+      - 'multiplication/commit-hash.txt' # Ignore pushes that only modify this file
 
 jobs:
   build:
@@ -22,8 +22,8 @@ jobs:
       # Check for new commits
       - name: Check for new commits
         run: |
-          if [ -f subtraction/commit-hash.txt ]; then
-            PREVIOUS_COMMIT=$(cat subtraction/commit-hash.txt)
+          if [ -f multiplication/commit-hash.txt ]; then
+            PREVIOUS_COMMIT=$(cat multiplication/commit-hash.txt)
             CURRENT_COMMIT=${{ github.sha }}
             echo "Last Commit: $PREVIOUS_COMMIT"
             echo "Current Commit: $CURRENT_COMMIT"
@@ -47,26 +47,26 @@ jobs:
       # Clean the project
       - name: Maven Clean
         run: mvn clean
-        working-directory: subtraction
+        working-directory: multiplication
 
       # Compile the project
       - name: Maven Compile
         run: mvn compile
-        working-directory: subtraction
+        working-directory: multiplication
 
       # Run tests
       - name: Maven Test
         run: mvn test
-        working-directory: subtraction
+        working-directory: multiplication
 
       # Package the project
       - name: Maven Package
         run: mvn package
-        working-directory: subtraction
+        working-directory: multiplication
 
       # Store commit hash in a file
       - name: Save Commit Hash
-        run: echo "${{ github.sha }}" > subtraction/commit-hash.txt
+        run: echo "${{ github.sha }}" > multiplication/commit-hash.txt
 
       # Create a new branch for the commit
       - name: Create Branch
@@ -74,7 +74,7 @@ jobs:
           git checkout -b update-commit-hash
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add subtraction/commit-hash.txt
+          git add multiplication/commit-hash.txt
           git commit -m "Update commit-hash.txt with latest commit hash"
           git push origin update-commit-hash
 
